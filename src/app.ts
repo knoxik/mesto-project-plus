@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import userRouter from './routes/users';
-import cardRouter from './routes/cards';
+import router from './routes';
 
 const { PORT = 3000 } = process.env;
 
@@ -20,8 +19,7 @@ app.use((req: any, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/users', userRouter);
-app.use('/cards', cardRouter);
+app.use(router);
 
 type TErr = {
   statusCode?: number,
