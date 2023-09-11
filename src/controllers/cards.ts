@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import Card from '../models/card';
-
-const NotFoundError = require('../errors/not-found-err');
+import NotFoundError from '../errors/not-found-err';
 
 export const getCards = async (req: Request, res: Response, next: any) => {
   try {
@@ -43,7 +42,7 @@ export const likeCard = async (req: any, res: Response, next: any) => {
     const card = await Card.findOneAndUpdate(
       { _id: cardId },
       { $addToSet: { likes: req.user._id } },
-      { new: true, runValidators: true },
+      { new: true },
     ).orFail(new NotFoundError('Передан несуществующий _id карточки.'));
 
     res.send({ data: card });
@@ -59,7 +58,7 @@ export const dislikeCard = async (req: any, res: Response, next: any) => {
     const card = await Card.findOneAndUpdate(
       { _id: cardId },
       { $pull: { likes: req.user._id } },
-      { new: true, runValidators: true },
+      { new: true },
     ).orFail(new NotFoundError('Передан несуществующий _id карточки.'));
 
     res.send({ data: card });

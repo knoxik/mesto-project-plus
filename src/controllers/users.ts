@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/user';
-
-const NotFoundError = require('../errors/not-found-err');
+import NotFoundError from '../errors/not-found-err';
 
 export const getUsers = async (req: Request, res: Response, next: any) => {
   try {

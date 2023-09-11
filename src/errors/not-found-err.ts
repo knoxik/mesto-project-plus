@@ -1,8 +1,8 @@
-class NotFoundError extends Error {
+import { NOT_FOUND_CODE } from './constrants';
+
+export default class NotFoundError extends Error {
   constructor(message: string) {
     super(message);
-    (this as any).statusCode = 404;
+    (this as any).statusCode = NOT_FOUND_CODE;
   }
 }
-
-module.exports = NotFoundError;
