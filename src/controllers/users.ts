@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import User from '../models/user';
 
 const NotFoundError = require('../errors/not-found-err');
@@ -25,10 +26,23 @@ export const getUser = async (req: Request, res: Response, next: any) => {
 };
 
 export const createUser = async (req: Request, res: Response, next: any) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
   try {
-    const user = await User.create({ name, about, avatar });
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
     res.send({ data: user });
   } catch (err) {
     next(err);
