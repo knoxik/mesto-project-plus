@@ -8,14 +8,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 const app = express();
 
-app.use((req: any, res, next) => {
-  req.user = {
-    _id: '64fdcab7f36cdc22f59ef8c7',
-  };
-
-  next();
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

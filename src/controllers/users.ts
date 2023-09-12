@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
 const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
 
 export const getUsers = async (req: Request, res: Response, next: any) => {
   try {
@@ -74,6 +76,43 @@ export const updateAvatar = async (req: any, res: Response, next: any) => {
       { new: true, runValidators: true },
     ).orFail(new NotFoundError('Пользователь с указанным _id не найден.'));
 
+    res.send({ data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const login = async (req: Request, res: Response, next: any) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email }).select('+password')
+      .orFail(new BadRequestError('Неправильные почта или пароль'));
+
+    const matched = bcrypt.compare(password, user.password);
+    if (!matched) throw new BadRequestError('Неправильные почта или пароль');
+
+    const token = jwt.sign(
+      { _id: user._id },
+      'some-secret-key',
+      { expiresIn: '7d' },
+    );
+
+    res.cookie('token', token, {
+      maxAge: 3600000 * 24 * 7,
+      httpOnly: true,
+    }).end();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMe = async (req: Request, res: Response, next: any) => {
+  const { _id } = (req as any).user;
+
+  try {
+    const user = await User.findById(_id)
+      .orFail(new NotFoundError('Пользователь не найден.'));
     res.send({ data: user });
   } catch (err) {
     next(err);
