@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Card from '../models/card';
 import NotFoundError from '../errors/not-found-err';
 import ForbiddenError from '../errors/forbidden-err';
+import BadRequestError from '../errors/bad-request-err';
 
 export const getCards = async (req: Request, res: Response, next: any) => {
   try {
@@ -20,11 +21,15 @@ export const deleteCard = async (req: Request | any, res: Response, next: any) =
       .orFail(new NotFoundError('Карточка с указанным _id не найдена.'));
 
     if (card.owner.toString() !== req.user._id) throw new ForbiddenError('Недостаточно прав');
-    card.deleteOne();
+    await card.deleteOne();
 
     res.send({ data: card });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
+    } else {
+      next(err);
+    }
   }
 };
 

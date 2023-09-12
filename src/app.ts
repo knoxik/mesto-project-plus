@@ -1,8 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
 import router from './routes';
-import { SERVER_ERROR_CODE, BAD_REQUEST_CODE, CONFLICT_CODE } from './errors/constrants';
 import { requestLogger, errorLogger } from './middlewares/logger';
+import ErrorHandler from './middlewares/error-handler';
 
 const { errors } = require('celebrate');
 
@@ -13,38 +14,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 const app = express();
 
 app.use(requestLogger);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(router);
 app.use(errorLogger);
 app.use(errors());
-
-type TErr = {
-  statusCode?: number,
-  message?: string,
-  code?: number,
-}
-
-app.use((err: TErr, req: Request, res: Response, next: NextFunction) => {
-  let { statusCode = SERVER_ERROR_CODE } = err;
-  const { message } = err;
-
-  if (err instanceof mongoose.Error.ValidationError || err instanceof mongoose.Error.CastError) {
-    statusCode = BAD_REQUEST_CODE;
-  } else if (err.code === 11000) {
-    statusCode = CONFLICT_CODE;
-  }
-
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === SERVER_ERROR_CODE
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-
-  next();
-});
+app.use(ErrorHandler);
 
 app.listen(PORT);

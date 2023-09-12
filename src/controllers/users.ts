@@ -5,6 +5,8 @@ import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-err';
 import UnauthorizedError from '../errors/unauthorized-err';
+import BadRequestError from '../errors/bad-request-err';
+import ConflictError from '../errors/conflict-err';
 
 export const getUsers = async (req: Request, res: Response, next: any) => {
   try {
@@ -45,9 +47,15 @@ export const createUser = async (req: Request, res: Response, next: any) => {
       email,
       password: hash,
     });
-    res.send({ data: user });
-  } catch (err) {
-    next(err);
+    res.send({ data: user.toJSON() });
+  } catch (err: any) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
+    } else if (err.code === 11000) {
+      next(new ConflictError('Email уже используется другим пользователем'));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -61,8 +69,12 @@ export const updateProfile = async (req: any, res: Response, next: any) => {
     ).orFail(new NotFoundError('Пользователь с указанным _id не найден.'));
 
     res.send({ data: user });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -77,8 +89,12 @@ export const updateAvatar = async (req: any, res: Response, next: any) => {
     ).orFail(new NotFoundError('Пользователь с указанным _id не найден.'));
 
     res.send({ data: user });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError(err.message));
+    } else {
+      next(err);
+    }
   }
 };
 
