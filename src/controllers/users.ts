@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-err';
-import BadRequestError from '../errors/bad-request-err';
+import UnauthorizedError from '../errors/unauthorized-err';
 
 export const getUsers = async (req: Request, res: Response, next: any) => {
   try {
@@ -87,10 +87,10 @@ export const login = async (req: Request, res: Response, next: any) => {
 
   try {
     const user = await User.findOne({ email }).select('+password')
-      .orFail(new BadRequestError('Неправильные почта или пароль'));
+      .orFail(new UnauthorizedError('Неправильные почта или пароль'));
 
-    const matched = bcrypt.compare(password, user.password);
-    if (!matched) throw new BadRequestError('Неправильные почта или пароль');
+    const matched = await bcrypt.compare(password, user.password);
+    if (!matched) throw new UnauthorizedError('Неправильные почта или пароль');
 
     const token = jwt.sign(
       { _id: user._id },
@@ -107,8 +107,8 @@ export const login = async (req: Request, res: Response, next: any) => {
   }
 };
 
-export const getMe = async (req: Request, res: Response, next: any) => {
-  const { _id } = (req as any).user;
+export const getMe = async (req: Request | any, res: Response, next: any) => {
+  const { _id } = req.user;
 
   try {
     const user = await User.findById(_id)

@@ -18,6 +18,13 @@ const cardSchema = new mongoose.Schema<ICard>({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(avatar: string) {
+        // eslint-disable-next-line
+        return /^(http(s):\/\/.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/g.test(avatar);
+      },
+      message: 'URL указан неверно',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
