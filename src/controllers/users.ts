@@ -3,8 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
-const NotFoundError = require('../errors/not-found-err');
-const BadRequestError = require('../errors/bad-request-err');
+import NotFoundError from '../errors/not-found-err';
+import BadRequestError from '../errors/bad-request-err';
 
 export const getUsers = async (req: Request, res: Response, next: any) => {
   try {
